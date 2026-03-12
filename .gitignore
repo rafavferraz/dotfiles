@@ -1,7 +1,6 @@
-# SSH keys
-*.pem
-id_*
-*.key
+# SSH — only track config, never keys
+ssh/*
+!ssh/config
 
 # OS junk
 .DS_Store

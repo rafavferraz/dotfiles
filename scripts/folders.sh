@@ -6,6 +6,5 @@ mkdir -p ~/code/projects
 mkdir -p ~/code/contrib
 mkdir -p ~/code/scratch
 mkdir -p ~/code/notes
-mkdir -p ~/.local/bin
 
 echo "Folder structure created."

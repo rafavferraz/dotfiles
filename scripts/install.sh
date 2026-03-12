@@ -37,6 +37,9 @@ if [ "$OS" = "Darwin" ]; then
     fish -c "fish_add_path /opt/homebrew/bin" 2>/dev/null || true
 fi
 
+echo "=== Installing yazi flavor ==="
+ya pkg add bennyyip/gruvbox-dark || true
+
 echo "=== Setting up symlinks ==="
 DOTFILES=~/code/dotfiles
 
@@ -45,15 +48,18 @@ mkdir -p ~/.config/fish
 mkdir -p ~/.config/yazi
 mkdir -p ~/.config/zed
 mkdir -p ~/.claude
+mkdir -p ~/.ssh
 
 ln -sf "$DOTFILES/kitty/kitty.conf" ~/.config/kitty/kitty.conf
 ln -sf "$DOTFILES/kitty/current-theme.conf" ~/.config/kitty/current-theme.conf
 ln -sf "$DOTFILES/fish/config.fish" ~/.config/fish/config.fish
 ln -sf "$DOTFILES/git/.gitconfig" ~/.gitconfig
 ln -sf "$DOTFILES/yazi/yazi.toml" ~/.config/yazi/yazi.toml
+ln -sf "$DOTFILES/yazi/theme.toml" ~/.config/yazi/theme.toml
 ln -sf "$DOTFILES/starship/starship.toml" ~/.config/starship.toml
 ln -sf "$DOTFILES/zed/settings.json" ~/.config/zed/settings.json
 ln -sf "$DOTFILES/claude/settings.json" ~/.claude/settings.json
+ln -sf "$DOTFILES/ssh/config" ~/.ssh/config
 
 echo "=== Done! ==="
 echo "Restart Kitty to apply changes."
