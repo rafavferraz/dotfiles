@@ -4,12 +4,22 @@ OS="$(uname -s)"
 
 echo "=== Installing packages ==="
 if [ "$OS" = "Darwin" ]; then
-    brew install --cask kitty zed || true
+    brew install --cask kitty zed docker || true
     brew install git gh curl fish bat btop htop lazygit tree yazi starship || true
     brew install --cask font-jetbrains-mono-nerd-font || true
 elif [ "$OS" = "Linux" ]; then
     sudo apt update
-    sudo apt install -y git gh curl kitty fish bat btop htop lazygit tree || true
+    sudo apt install -y git gh curl kitty fish bat btop htop tree || true
+    # lazygit — download pre-built binary
+    if ! command -v lazygit &>/dev/null; then
+        LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')
+        ARCH=$(dpkg --print-architecture)
+        [ "$ARCH" = "amd64" ] && ARCH="x86_64" || ARCH="arm64"
+        curl -fLo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_${ARCH}.tar.gz"
+        tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+        sudo mv /tmp/lazygit /usr/local/bin/
+        rm -f /tmp/lazygit.tar.gz
+    fi
     # starship — download pre-built binary
     if ! command -v starship &>/dev/null; then
         curl -sS https://starship.rs/install.sh | sh -s -- -y
@@ -31,7 +41,7 @@ elif [ "$OS" = "Linux" ]; then
         curl -sS https://zed.dev/install.sh | sh
     fi
     # nvidia driver — auto-detect and install recommended driver
-    if ! command -v nvidia-smi &>/dev/null && lspci | grep -qi nvidia; then
+    if ! command -v nvidia-smi &>/dev/null && command -v lspci &>/dev/null && lspci | grep -qi nvidia; then
         sudo apt install -y ubuntu-drivers-common
         sudo ubuntu-drivers install
         echo "NVIDIA driver installed. Reboot and re-run this script for nvidia-container-toolkit."
