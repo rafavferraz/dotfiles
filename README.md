@@ -36,14 +36,6 @@ sudo reboot
 bash ~/code/dotfiles/setup.sh
 ```
 
-## Testing
-
-Test the setup on a fresh Ubuntu 24.04 container (requires Docker):
-
-```bash
-bash scripts/test.sh
-```
-
 ## Syncing changes
 
 ```bash
