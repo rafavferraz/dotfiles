@@ -1,8 +1,0 @@
-FROM ubuntu:24.04
-RUN apt-get update && apt-get install -y sudo curl unzip git
-RUN useradd -m -s /bin/bash testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-USER testuser
-WORKDIR /home/testuser
-RUN mkdir -p ~/code/dotfiles
-COPY --chown=testuser:testuser . /home/testuser/code/dotfiles/
-RUN bash ~/code/dotfiles/setup.sh

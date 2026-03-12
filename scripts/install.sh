@@ -68,7 +68,6 @@ echo "=== Authenticating with GitHub ==="
 if ! gh auth status &>/dev/null; then
     gh auth login
 fi
-gh auth setup-git
 
 echo "=== Installing Claude Code ==="
 if ! command -v claude &>/dev/null; then
@@ -122,6 +121,9 @@ ln -sf "$DOTFILES/yazi/theme.toml" ~/.config/yazi/theme.toml
 ln -sf "$DOTFILES/starship/starship.toml" ~/.config/starship.toml
 ln -sf "$DOTFILES/zed/settings.json" ~/.config/zed/settings.json
 ln -sf "$DOTFILES/claude/settings.json" ~/.claude/settings.json
+
+echo "=== Setting up git credentials ==="
+gh auth setup-git
 
 echo "=== Done! ==="
 echo "Restart Kitty to apply changes."
