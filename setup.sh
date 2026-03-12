@@ -3,5 +3,6 @@ set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
+bash "$DIR/scripts/cleanup_home.sh"
 bash "$DIR/scripts/folders.sh"
 bash "$DIR/scripts/install.sh"

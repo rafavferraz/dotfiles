@@ -11,13 +11,12 @@ Personal configuration files synced across Linux and macOS machines.
 - **yazi** — file manager config + theme
 - **zed** — editor settings
 - **claude** — Claude Code settings
-- **ssh** — SSH config
 - **scripts** — setup and utility scripts
 
 ## New machine setup
 
 ```bash
-git clone git@github.com:rafavferraz/dotfiles.git ~/code/dotfiles
+git clone https://github.com/rafavferraz/dotfiles.git ~/code/dotfiles
 bash ~/code/dotfiles/setup.sh
 ```
 

@@ -1,7 +1,3 @@
-# SSH — only track config, never keys
-ssh/*
-!ssh/config
-
 # OS junk
 .DS_Store
 Thumbs.db

@@ -64,6 +64,12 @@ elif [ "$OS" = "Linux" ]; then
     fi
 fi
 
+echo "=== Authenticating with GitHub ==="
+if ! gh auth status &>/dev/null; then
+    gh auth login
+fi
+gh auth setup-git
+
 echo "=== Installing Claude Code ==="
 if ! command -v claude &>/dev/null; then
     curl -fsSL https://claude.ai/install.sh | bash
@@ -86,15 +92,26 @@ if command -v ya &>/dev/null; then
     ya pkg add bennyyip/gruvbox-dark || true
 fi
 
-echo "=== Setting up symlinks ==="
+echo "=== Setting up dotfiles repo ==="
 DOTFILES=~/code/dotfiles
+
+if [ -d "$DOTFILES/.git" ]; then
+    git -C "$DOTFILES" pull
+elif [ -d "$DOTFILES" ]; then
+    git clone https://github.com/rafavferraz/dotfiles.git /tmp/dotfiles-clone
+    cp -a /tmp/dotfiles-clone/. "$DOTFILES/"
+    rm -rf /tmp/dotfiles-clone
+else
+    git clone https://github.com/rafavferraz/dotfiles.git "$DOTFILES"
+fi
+
+echo "=== Setting up symlinks ==="
 
 mkdir -p ~/.config/kitty
 mkdir -p ~/.config/fish
 mkdir -p ~/.config/yazi
 mkdir -p ~/.config/zed
 mkdir -p ~/.claude
-mkdir -p ~/.ssh
 
 ln -sf "$DOTFILES/kitty/kitty.conf" ~/.config/kitty/kitty.conf
 ln -sf "$DOTFILES/kitty/current-theme.conf" ~/.config/kitty/current-theme.conf
@@ -105,7 +122,6 @@ ln -sf "$DOTFILES/yazi/theme.toml" ~/.config/yazi/theme.toml
 ln -sf "$DOTFILES/starship/starship.toml" ~/.config/starship.toml
 ln -sf "$DOTFILES/zed/settings.json" ~/.config/zed/settings.json
 ln -sf "$DOTFILES/claude/settings.json" ~/.claude/settings.json
-ln -sf "$DOTFILES/ssh/config" ~/.ssh/config
 
 echo "=== Done! ==="
 echo "Restart Kitty to apply changes."
