@@ -5,11 +5,11 @@ OS="$(uname -s)"
 echo "=== Installing packages ==="
 if [ "$OS" = "Darwin" ]; then
     brew install --cask kitty zed || true
-    brew install git gh curl fish bat btop htop tree yazi starship || true
+    brew install git gh curl fish bat btop htop lazygit tree yazi starship || true
     brew install --cask font-jetbrains-mono-nerd-font || true
 elif [ "$OS" = "Linux" ]; then
     sudo apt update
-    sudo apt install -y git gh curl kitty fish bat btop htop tree || true
+    sudo apt install -y git gh curl kitty fish bat btop htop lazygit tree || true
     # starship — download pre-built binary
     if ! command -v starship &>/dev/null; then
         curl -sS https://starship.rs/install.sh | sh -s -- -y
