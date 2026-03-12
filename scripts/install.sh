@@ -4,7 +4,7 @@ OS="$(uname -s)"
 
 echo "=== Installing packages ==="
 if [ "$OS" = "Darwin" ]; then
-    brew install --cask kitty || true
+    brew install --cask kitty zed || true
     brew install git gh curl fish bat htop tree yazi starship || true
     brew install --cask font-jetbrains-mono-nerd-font || true
 elif [ "$OS" = "Linux" ]; then
@@ -26,6 +26,10 @@ elif [ "$OS" = "Linux" ]; then
     curl -fLo "$FONT_DIR/JetBrainsMonoNerdFont-Regular.ttf" \
         https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFont-Regular.ttf
     fc-cache -f
+    # zed — download pre-built binary
+    if ! command -v zed &>/dev/null; then
+        curl -sS https://zed.dev/install.sh | sh
+    fi
 fi
 
 echo "=== Configuring fish shell ==="
@@ -39,6 +43,7 @@ DOTFILES=~/code/dotfiles
 mkdir -p ~/.config/kitty
 mkdir -p ~/.config/fish
 mkdir -p ~/.config/yazi
+mkdir -p ~/.config/zed
 
 ln -sf "$DOTFILES/kitty/kitty.conf" ~/.config/kitty/kitty.conf
 ln -sf "$DOTFILES/kitty/current-theme.conf" ~/.config/kitty/current-theme.conf
@@ -46,6 +51,7 @@ ln -sf "$DOTFILES/fish/config.fish" ~/.config/fish/config.fish
 ln -sf "$DOTFILES/git/.gitconfig" ~/.gitconfig
 ln -sf "$DOTFILES/yazi/yazi.toml" ~/.config/yazi/yazi.toml
 ln -sf "$DOTFILES/starship/starship.toml" ~/.config/starship.toml
+ln -sf "$DOTFILES/zed/settings.json" ~/.config/zed/settings.json
 
 echo "=== Done! ==="
 echo "Restart Kitty to apply changes."

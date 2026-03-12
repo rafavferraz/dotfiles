@@ -1,0 +1,165 @@
+//// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "project_panel": {
+    "diagnostic_badges": false,
+    "show_diagnostics": "off",
+  },
+  "tabs": {
+    "show_diagnostics": "off",
+  },
+  "icon_theme": "Zed (Default)",
+  "debugger": {
+    "save_breakpoints": true,
+  },
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 500,
+    },
+  }, 
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  // "ui_font_family": "JetBrainsMono Nerd Font",
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "VSCode Dark Modern",
+  },
+  "toolbar": {
+    "breadcrumbs": false,
+  },
+  "cursor_shape": "block",
+  "cursor_blink": true,
+
+  "git": {
+    "hunk_style": "staged_hollow",
+    "inline_blame": {
+      "enabled": false,
+    },
+    "git_gutter": "tracked_files",
+    "enable_status": true,
+    "enable_diff": true,
+  },
+
+  "diff_view_style": "split",
+
+  "gutter": {
+    "folds": false,
+    "line_numbers": true,
+  },
+  "indent_guides": {
+    "enabled": false,
+  },
+
+  "show_wrap_guides": true,
+  "wrap_guides": [80],
+
+  "diagnostics": {
+    "inline": {
+      "enabled": false,
+    },
+  },
+
+  "languages": {
+    "C++": {
+      "inlay_hints": {
+        "edit_debounce_ms": 500,
+        "enabled": false,
+      },
+      "completions": {
+        "words_min_length": 1,
+      },
+      "show_wrap_guides": true,
+      "tab_size": 2,
+      "formatter": "language_server",
+      "format_on_save": "on",
+    },
+    "Markdown": {},
+  },
+  "completions": {
+    "lsp": true,
+  },
+
+  "lsp": {
+    "clangd": {
+      "binary": {
+        "arguments": [
+          "--clang-tidy=false",
+          "--background-index=false",
+          "--header-insertion=never",
+        ],
+      },
+    },
+  },
+
+  "show_completions_on_input": true,
+  "show_completion_documentation": true,
+  "hover_popover_enabled": true,
+  "lsp_document_colors": "inlay",
+
+  "scrollbar": {
+    "git_diff": true,
+    "axes": {
+      "horizontal": false,
+      "vertical": false,
+    },
+  },
+
+  "minimap": {
+    "display_in": "all_editors",
+    "show": "always",
+    "thumb": "always",
+  },
+
+  "current_line_highlight": "all",
+
+  "theme_overrides": {
+    "VSCode Dark Modern": {
+      "border": "#4F4F4F70",
+      "border.focused": "#2A2D2EFF",
+      "element.background": "#4F4F4F70",
+      "element.active": "#4F4F4F70",
+      "element.selected": "#4F4F4F70",
+      "ghost_element.selected": "#4F4F4F70",
+      "icon.muted": null,
+      "title_bar.background": "#0A0A0AFF",
+      "toolbar.background": "#0A0A0AFF",
+      "tab_bar.background": "#0A0A0AFF",
+      "tab.active_background": "#0A0A0AFF",
+      "panel.background": "#0A0A0AFF",
+      "panel.focused_border": "#2A2D2EFF",
+      "pane.focused_border": "#2A2D2EFF",
+      "editor.background": "#0A0A0AFF",
+      "editor.gutter.background": "#0A0A0AFF",
+      "editor.subheader.background": null,
+      "editor.active_line.background": "#4F4F4F70",
+      "editor.highlighted_line.background": null,
+      "editor.line_number": "#6B6B6BFF",
+      "editor.active_line_number": "#BDBDBDFF",
+      "editor.indent_guide": "#0A0A0AFF",
+      "terminal.background": "#0A0A0AFF",
+      "link_text.hover": "#6AB883FF",
+      "players": [
+        {
+          "cursor": "#BDBDBDFF",
+          "background": "#BDBDBDFF",
+          "selection": "#6B6B6B70",
+        },
+      ],
+      "syntax": {
+        "comment": {
+          "color": "#616161FF",
+        },
+        "comment.doc": {
+          "color": "#616161FF",
+        },
+      },
+    },
+  },
+}
