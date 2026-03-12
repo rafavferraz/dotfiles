@@ -1,0 +1,14 @@
+[user]
+	name = Rafael Ferraz
+	email = rafavferraz@gmail.com
+[init]
+	defaultBranch = main
+[core]
+	editor = vim
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	lg = log --oneline --graph --decorate
+[pull]
+	rebase = false

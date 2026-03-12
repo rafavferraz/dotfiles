@@ -1,0 +1,8 @@
+# SSH keys
+*.pem
+id_*
+*.key
+
+# OS junk
+.DS_Store
+Thumbs.db
