@@ -30,6 +30,12 @@ elif [ "$OS" = "Linux" ]; then
     if ! command -v zed &>/dev/null; then
         curl -sS https://zed.dev/install.sh | sh
     fi
+    # nvidia driver — auto-detect and install recommended driver
+    if ! command -v nvidia-smi &>/dev/null && lspci | grep -qi nvidia; then
+        sudo apt install -y ubuntu-drivers-common
+        sudo ubuntu-drivers install
+        echo "NVIDIA driver installed. Reboot and re-run this script for nvidia-container-toolkit."
+    fi
     # docker — install via convenience script
     if ! command -v docker &>/dev/null; then
         curl -fsSL https://get.docker.com | sh
