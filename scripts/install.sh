@@ -5,11 +5,11 @@ OS="$(uname -s)"
 echo "=== Installing packages ==="
 if [ "$OS" = "Darwin" ]; then
     brew install --cask kitty zed || true
-    brew install git gh curl fish bat htop tree yazi starship || true
+    brew install git gh curl fish bat btop htop tree yazi starship || true
     brew install --cask font-jetbrains-mono-nerd-font || true
 elif [ "$OS" = "Linux" ]; then
     sudo apt update
-    sudo apt install -y git gh curl kitty fish bat htop tree || true
+    sudo apt install -y git gh curl kitty fish bat btop htop tree || true
     # starship — download pre-built binary
     if ! command -v starship &>/dev/null; then
         curl -sS https://starship.rs/install.sh | sh -s -- -y
@@ -32,13 +32,27 @@ elif [ "$OS" = "Linux" ]; then
     fi
 fi
 
+echo "=== Installing Claude Code ==="
+if ! command -v claude &>/dev/null; then
+    curl -fsSL https://claude.ai/install.sh | bash
+fi
+
 echo "=== Configuring fish shell ==="
+FISH_PATH="$(which fish)"
 if [ "$OS" = "Darwin" ]; then
     fish -c "fish_add_path /opt/homebrew/bin" 2>/dev/null || true
 fi
+if [ -n "$FISH_PATH" ] && ! grep -q "$FISH_PATH" /etc/shells; then
+    echo "$FISH_PATH" | sudo tee -a /etc/shells
+fi
+if [ -n "$FISH_PATH" ] && [ "$SHELL" != "$FISH_PATH" ]; then
+    chsh -s "$FISH_PATH"
+fi
 
 echo "=== Installing yazi flavor ==="
-ya pkg add bennyyip/gruvbox-dark || true
+if command -v ya &>/dev/null; then
+    ya pkg add bennyyip/gruvbox-dark || true
+fi
 
 echo "=== Setting up symlinks ==="
 DOTFILES=~/code/dotfiles
