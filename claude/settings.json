@@ -3,5 +3,9 @@
     "allow": []
   },
   "enabledPlugins": {},
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/rafa/.claude/statusline-command.sh"
+  }
 }

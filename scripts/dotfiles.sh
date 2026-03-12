@@ -30,6 +30,9 @@ ln -sf "$DOTFILES/yazi/theme.toml" ~/.config/yazi/theme.toml
 ln -sf "$DOTFILES/starship/starship.toml" ~/.config/starship.toml
 ln -sf "$DOTFILES/zed/settings.json" ~/.config/zed/settings.json
 ln -sf "$DOTFILES/claude/settings.json" ~/.claude/settings.json
+ln -sf "$DOTFILES/claude/statusline-command.sh" ~/.claude/statusline-command.sh
+ln -sfn "$DOTFILES/claude/agents" ~/.claude/agents
+ln -sfn "$DOTFILES/claude/skills" ~/.claude/skills
 
 echo "=== Setting up git credentials ==="
 gh auth setup-git
