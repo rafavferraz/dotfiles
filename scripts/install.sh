@@ -30,6 +30,22 @@ elif [ "$OS" = "Linux" ]; then
     if ! command -v zed &>/dev/null; then
         curl -sS https://zed.dev/install.sh | sh
     fi
+    # docker — install via convenience script
+    if ! command -v docker &>/dev/null; then
+        curl -fsSL https://get.docker.com | sh
+        sudo usermod -aG docker "$USER"
+    fi
+    # nvidia-container-toolkit — only if GPU is present
+    if command -v nvidia-smi &>/dev/null && ! dpkg -s nvidia-container-toolkit &>/dev/null 2>&1; then
+        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+            | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+            | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+        sudo apt update
+        sudo apt install -y nvidia-container-toolkit
+        sudo nvidia-ctk runtime configure --runtime=docker
+        sudo systemctl restart docker
+    fi
 fi
 
 echo "=== Installing Claude Code ==="
