@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal configuration files synced across Linux and macOS machines.
+Personal configuration files for Linux (Ubuntu/Debian) machines.
 
 ## What's included
 
