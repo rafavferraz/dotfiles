@@ -2,10 +2,12 @@
   "permissions": {
     "allow": []
   },
-  "enabledPlugins": {},
-  "skipDangerousModePermissionPrompt": true,
   "statusLine": {
     "type": "command",
     "command": "bash /home/rafa/.claude/statusline-command.sh"
-  }
+  },
+  "enabledPlugins": {
+    "clangd-lsp@claude-plugins-official": true
+  },
+  "skipDangerousModePermissionPrompt": true
 }
