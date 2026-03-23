@@ -7,17 +7,23 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "minimum_contrast_for_highlights": 60,
+
+  "colorize_brackets": false,
+
   "git_panel": {
     "collapse_untracked_diff": true,
-    "tree_view": true
+    "tree_view": true,
   },
   "project_panel": {
+    "hide_hidden": false,
     "diagnostic_badges": false,
-    "show_diagnostics": "off",
+    "show_diagnostics": "all",
+    "hide_gitignore": true,
   },
   "tabs": {
     "git_status": true,
-    "show_diagnostics": "off",
+    "show_diagnostics": "all",
   },
   "icon_theme": "Zed (Default)",
   "debugger": {
@@ -28,6 +34,11 @@
       "milliseconds": 500,
     },
   },
+
+  "buffer_font_features": {
+    "calt": false,
+  },
+
   "ui_font_size": 16,
   "buffer_font_size": 15,
   "ui_font_family": "JetBrainsMono Nerd Font",
@@ -48,7 +59,7 @@
       "show_commit_summary": true,
       "enabled": false,
     },
-    
+
     "git_gutter": "tracked_files",
     "enable_status": true,
     "enable_diff": true,
@@ -73,7 +84,7 @@
     },
   },
 
-  "max_tabs": 3,
+  "max_tabs": 4,
 
   "languages": {
     "C++": {
@@ -88,9 +99,9 @@
       "tab_size": 2,
       "formatter": {
         "external": {
-          "command": "clang-format",
-          "arguments": ["--style=file", "--assume-filename={buffer_path}"]
-        }
+          "command": "clang-format-20",
+          "arguments": ["--style=file", "--assume-filename={buffer_path}"],
+        },
       },
       "format_on_save": "on",
     },
@@ -132,6 +143,11 @@
   },
 
   "current_line_highlight": "all",
+
+  "experimental.theme_overrides": {
+    "editor.document_highlight.bracket_background": "#FFFFFF70",
+    // "editor.document_highlight.read_highlight.background": "#ffff0050",
+  },
 
   "theme_overrides": {
     "VSCode Dark Modern": {

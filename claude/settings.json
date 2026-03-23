@@ -4,10 +4,11 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /home/rafa/.claude/statusline-command.sh"
+    "command": "bash /home/rafa/code/projects/lagrange/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   },
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true
 }
