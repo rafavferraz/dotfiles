@@ -120,23 +120,18 @@ else
 fi
 
 # 5-hour rate limit window
-# 5-hour rate limit window
 rl_used=$(jq_num '.rate_limits.five_hour.used_percentage')
 rl_resets=$(jq_num '.rate_limits.five_hour.resets_at')
 
 rl_str=""
 if [ -n "$rl_used" ]; then
-  rl_remaining=$(echo "$rl_used" | awk '{ printf "%.0f", 100 - $1 }')
-  rl_str="${rl_remaining}%"
-  if [ -n "$rl_resets" ]; then
-    now_s=$(date +%s)
-    if [ "$rl_resets" -gt "$now_s" ] 2>/dev/null; then
-      diff=$(( rl_resets - now_s ))
-      hrs=$(( diff / 3600 ))
-      mins=$(( (diff % 3600) / 60 ))
-      rl_str="${rl_remaining}% (↺${hrs}h${mins}m)"
-    fi
-  fi
+  rl_pct_int=$(echo "$rl_used" | awk '{ printf "%.0f", $1 }')
+  rl_filled=$(( rl_pct_int / 10 ))
+  rl_empty=$(( 10 - rl_filled ))
+  rl_bar=""
+  i=0; while [ "$i" -lt "$rl_filled" ]; do rl_bar="${rl_bar}█"; i=$((i + 1)); done
+  i=0; while [ "$i" -lt "$rl_empty" ]; do rl_bar="${rl_bar}░"; i=$((i + 1)); done
+  rl_str="${rl_bar} ${rl_pct_int}%"
 fi
 
 # Session cost (cumulative)
