@@ -113,7 +113,7 @@ if [ -n "$used_pct" ]; then
     remaining=" ${rem_fmt}/${win_short}"
   fi
 
-  pct_fmt=$(echo "$used_pct" | awk '{ printf "%.1f%%", $1 }')
+  pct_fmt=$(echo "$used_pct" | awk '{ printf "%d%%", $1 }')
   ctx_str="${dim}${bar} ${pct_fmt}${reset} ${bar_color}${remaining}${reset}"
 else
   ctx_str="${dim}[----------] --%%${reset}"
