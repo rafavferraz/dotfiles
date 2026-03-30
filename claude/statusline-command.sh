@@ -120,10 +120,9 @@ else
 fi
 
 # 5-hour rate limit window
-rl_used=$(echo "$input" | jq -r '.rate_limits[] | select(.window == "5h") | .used_percentage // empty' 2>/dev/null)
-[ -z "$rl_used" ] && rl_used=$(echo "$input" | jq -r '.rate_limits[] | select(.type == "5_hour") | .used_percentage // empty' 2>/dev/null)
-[ -z "$rl_used" ] && rl_used=$(echo "$input" | jq -r '.rate_limits["5h"].used_percentage // empty' 2>/dev/null)
-rl_resets=$(echo "$input" | jq -r '.rate_limits[] | select(.window == "5h") | .resets_at // empty' 2>/dev/null)
+# 5-hour rate limit window
+rl_used=$(jq_num '.rate_limits.five_hour.used_percentage')
+rl_resets=$(jq_num '.rate_limits.five_hour.resets_at')
 
 rl_str=""
 if [ -n "$rl_used" ]; then
@@ -131,9 +130,8 @@ if [ -n "$rl_used" ]; then
   rl_str="${rl_remaining}%"
   if [ -n "$rl_resets" ]; then
     now_s=$(date +%s)
-    reset_s=$(date -d "$rl_resets" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$rl_resets" +%s 2>/dev/null)
-    if [ -n "$reset_s" ] && [ "$reset_s" -gt "$now_s" ] 2>/dev/null; then
-      diff=$(( reset_s - now_s ))
+    if [ "$rl_resets" -gt "$now_s" ] 2>/dev/null; then
+      diff=$(( rl_resets - now_s ))
       hrs=$(( diff / 3600 ))
       mins=$(( (diff % 3600) / 60 ))
       rl_str="${rl_remaining}% (↺${hrs}h${mins}m)"
