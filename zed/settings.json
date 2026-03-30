@@ -39,13 +39,14 @@
     "calt": false,
   },
 
-  "ui_font_size": 15,
-  "buffer_font_size": 16,
-  "ui_font_family": "JetBrainsMono Nerd Font",
+  "ui_font_size": 14,
+  "buffer_font_size": 14,
+  "ui_font_family": "JetBrainsMonoNL Nerd Font Mono",
+
   "theme": {
     "mode": "dark",
     "light": "One Light",
-    "dark": "Rafa Dark",
+    "dark": "Rafa Dark"
   },
   "toolbar": {
     "breadcrumbs": false,
@@ -99,7 +100,7 @@
       "tab_size": 2,
       "formatter": {
         "external": {
-          "command": "clang-format-20",
+          "command": "clang-format",
           "arguments": ["--style=file", "--assume-filename={buffer_path}"],
         },
       },

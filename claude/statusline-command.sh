@@ -60,11 +60,15 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
     fi
 
     git_branch=" (${branch}${dirty}${ab})"
+
+    # Stash count
+    stash_count=$(git -C "$cwd" -c gc.auto=0 stash list 2>/dev/null | wc -l | tr -d ' ')
+    [ "${stash_count:-0}" -gt 0 ] 2>/dev/null && git_branch="${git_branch} ⚑${stash_count}"
   fi
 fi
 
-# Model name
-model=$(jq_str '.model.display_name' | sed 's/ context)/)/g')
+# Model name — shorten "Claude Sonnet 4.6 (200k context)" → "Sonnet 4.6"
+model=$(jq_str '.model.display_name' | sed 's/^[Cc]laude //; s/ (.*$//' | xargs)
 
 # Context usage — progress bar + remaining tokens
 used_pct=$(jq_num '.context_window.used_percentage')
@@ -74,8 +78,8 @@ ctx_str=""
 if [ -n "$used_pct" ]; then
   # Build 10-segment progress bar
   pct_int=$(echo "$used_pct" | awk '{ printf "%.0f", $1 }')
-  filled=$(( pct_int / 10 ))
-  empty=$(( 10 - filled ))
+  filled=$(( pct_int * 6 / 100 ))
+  empty=$(( 6 - filled ))
   bar=""
   i=0; while [ "$i" -lt "$filled" ]; do bar="${bar}█"; i=$((i + 1)); done
   i=0; while [ "$i" -lt "$empty" ]; do bar="${bar}░"; i=$((i + 1)); done
@@ -89,16 +93,16 @@ if [ -n "$used_pct" ]; then
     bar_color="$green"
   fi
 
-  # Remaining tokens
+  # Used tokens
   remaining=""
   if [ -n "$window_size" ] && [ "$window_size" -gt 0 ]; then
-    remaining_tokens=$(echo "$used_pct $window_size" | awk '{ printf "%.0f", $2 * (100 - $1) / 100 }')
-    if [ "$remaining_tokens" -ge 1000000 ]; then
-      rem_fmt=$(echo "$remaining_tokens" | awk '{ printf "%.1fM", $1/1000000 }')
-    elif [ "$remaining_tokens" -ge 1000 ]; then
-      rem_fmt=$(echo "$remaining_tokens" | awk '{ printf "%dk", $1/1000 }')
+    used_tokens=$(echo "$used_pct $window_size" | awk '{ printf "%.0f", $2 * $1 / 100 }')
+    if [ "$used_tokens" -ge 1000000 ]; then
+      used_fmt=$(echo "$used_tokens" | awk '{ printf "%.1fM", $1/1000000 }')
+    elif [ "$used_tokens" -ge 1000 ]; then
+      used_fmt=$(echo "$used_tokens" | awk '{ printf "%dk", $1/1000 }')
     else
-      rem_fmt="$remaining_tokens"
+      used_fmt="$used_tokens"
     fi
     # Format window size
     if [ "$window_size" -ge 1000000 ]; then
@@ -110,13 +114,12 @@ if [ -n "$used_pct" ]; then
     fi
     # Strip trailing ".0" from window (1.0M -> 1M)
     win_short=$(echo "$win_fmt" | sed 's/\.0M$/M/')
-    remaining=" ${rem_fmt}/${win_short}"
+    remaining=" ${used_fmt}/${win_short}"
   fi
 
-  pct_fmt=$(echo "$used_pct" | awk '{ printf "%d%%", $1 }')
-  ctx_str="${dim}${bar} ${pct_fmt}${reset} ${bar_color}${remaining}${reset}"
+  ctx_str="${dim}${bar}${reset} ${bar_color}${remaining}${reset}"
 else
-  ctx_str="${dim}[----------] --%%${reset}"
+  ctx_str="${dim}[------] --${reset}"
 fi
 
 # 5-hour rate limit window
@@ -126,12 +129,12 @@ rl_resets=$(jq_num '.rate_limits.five_hour.resets_at')
 rl_str=""
 if [ -n "$rl_used" ]; then
   rl_pct_int=$(echo "$rl_used" | awk '{ printf "%.0f", $1 }')
-  rl_filled=$(( rl_pct_int / 10 ))
-  rl_empty=$(( 10 - rl_filled ))
+  rl_filled=$(( rl_pct_int * 6 / 100 ))
+  rl_empty=$(( 6 - rl_filled ))
   rl_bar=""
   i=0; while [ "$i" -lt "$rl_filled" ]; do rl_bar="${rl_bar}█"; i=$((i + 1)); done
   i=0; while [ "$i" -lt "$rl_empty" ]; do rl_bar="${rl_bar}░"; i=$((i + 1)); done
-  rl_str="${rl_bar} ${rl_pct_int}%"
+  rl_str="${rl_bar}"
   if [ -n "$rl_resets" ]; then
     now_s=$(date +%s)
     if [ "$rl_resets" -gt "$now_s" ] 2>/dev/null; then
@@ -189,11 +192,9 @@ fi
 out=""
 out+="${yellow}${short_cwd}${reset}"
 out+="${aqua}${git_branch}${reset}"
-out+="  "
+out+=" "
 [ -n "$model" ] && out+="${blue}${model}${reset} "
 out+="${ctx_str}"
-out+="\n"
-out+="${orange}${cost_str}${reset}"
-[ -n "$rl_str" ] && out+=" ${purple}5h:${rl_str}${reset}"
+[ -n "$rl_str" ] && out+=" ${purple}⏱ ${rl_str}${reset}"
 
 printf '%b' "$out"
