@@ -76,7 +76,9 @@ if [ -n "$used_pct" ]; then
   pct_int=$(echo "$used_pct" | awk '{ printf "%.0f", $1 }')
   filled=$(( pct_int / 10 ))
   empty=$(( 10 - filled ))
-  bar=$(printf "%${filled}s" | tr ' ' '#')$(printf "%${empty}s" | tr ' ' '-')
+  bar=""
+  i=0; while [ "$i" -lt "$filled" ]; do bar="${bar}█"; i=$((i + 1)); done
+  i=0; while [ "$i" -lt "$empty" ]; do bar="${bar}░"; i=$((i + 1)); done
 
   # Color bar by usage level
   if [ "$pct_int" -ge 75 ]; then
@@ -112,7 +114,7 @@ if [ -n "$used_pct" ]; then
   fi
 
   pct_fmt=$(echo "$used_pct" | awk '{ printf "%.1f%%", $1 }')
-  ctx_str="${bar_color}[${bar}] ${pct_fmt}${reset}${dim}${remaining}${reset}"
+  ctx_str="${bar_color}${bar} ${pct_fmt}${reset}${dim}${remaining}${reset}"
 else
   ctx_str="${dim}[----------] --%%${reset}"
 fi
