@@ -132,6 +132,15 @@ if [ -n "$rl_used" ]; then
   i=0; while [ "$i" -lt "$rl_filled" ]; do rl_bar="${rl_bar}█"; i=$((i + 1)); done
   i=0; while [ "$i" -lt "$rl_empty" ]; do rl_bar="${rl_bar}░"; i=$((i + 1)); done
   rl_str="${rl_bar} ${rl_pct_int}%"
+  if [ -n "$rl_resets" ]; then
+    now_s=$(date +%s)
+    if [ "$rl_resets" -gt "$now_s" ] 2>/dev/null; then
+      diff=$(( rl_resets - now_s ))
+      hrs=$(( diff / 3600 ))
+      mins=$(( (diff % 3600) / 60 ))
+      rl_str="${rl_str} ${hrs}h${mins}m"
+    fi
+  fi
 fi
 
 # Session cost (cumulative)
