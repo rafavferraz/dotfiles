@@ -168,7 +168,6 @@ out+="${aqua}${git_branch}${reset}"
 out+="  "
 [ -n "$model" ] && out+="${blue}${model}${reset} "
 out+="${ctx_str} "
-out+="${orange}${cost_str}${reset} "
-out+="${blue}${lines_str}${reset}"
+out+="${orange}${cost_str}${reset}"
 
 printf '%b' "$out"
