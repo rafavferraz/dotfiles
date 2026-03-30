@@ -4,12 +4,12 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /home/rafa/code/projects/lagrange/.claude/statusline-command.sh"
+    "command": "bash /Users/rafaelferraz/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   },
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "model": "haiku"
+  "model": "sonnet"
 }
