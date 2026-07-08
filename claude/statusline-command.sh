@@ -70,28 +70,13 @@ fi
 # Model name — shorten "Claude Sonnet 4.6 (200k context)" → "Sonnet 4.6"
 model=$(jq_str '.model.display_name' | sed 's/^[Cc]laude //; s/ (.*$//' | xargs)
 
-# Context usage — progress bar + remaining tokens
+# Context usage — percentage + remaining tokens
 used_pct=$(jq_num '.context_window.used_percentage')
 window_size=$(jq_num '.context_window.context_window_size')
 
 ctx_str=""
 if [ -n "$used_pct" ]; then
-  # Build 10-segment progress bar
   pct_int=$(echo "$used_pct" | awk '{ printf "%.0f", $1 }')
-  filled=$(( pct_int * 6 / 100 ))
-  empty=$(( 6 - filled ))
-  bar=""
-  i=0; while [ "$i" -lt "$filled" ]; do bar="${bar}█"; i=$((i + 1)); done
-  i=0; while [ "$i" -lt "$empty" ]; do bar="${bar}░"; i=$((i + 1)); done
-
-  # Color bar by usage level
-  if [ "$pct_int" -ge 75 ]; then
-    bar_color="$red"
-  elif [ "$pct_int" -ge 50 ]; then
-    bar_color="$orange"
-  else
-    bar_color="$green"
-  fi
 
   # Used tokens
   remaining=""
@@ -114,12 +99,12 @@ if [ -n "$used_pct" ]; then
     fi
     # Strip trailing ".0" from window (1.0M -> 1M)
     win_short=$(echo "$win_fmt" | sed 's/\.0M$/M/')
-    remaining=" ${used_fmt}/${win_short}"
+    remaining="${used_fmt}/${win_short}"
   fi
 
-  ctx_str="${dim}${bar}${reset} ${bar_color}${remaining}${reset}"
+  ctx_str="${dim}(${pct_int}%) ${remaining}${reset}"
 else
-  ctx_str="${dim}[------] --${reset}"
+  ctx_str="${dim}(--%)${reset}"
 fi
 
 # 5-hour rate limit window
@@ -129,19 +114,14 @@ rl_resets=$(jq_num '.rate_limits.five_hour.resets_at')
 rl_str=""
 if [ -n "$rl_used" ]; then
   rl_pct_int=$(echo "$rl_used" | awk '{ printf "%.0f", $1 }')
-  rl_filled=$(( rl_pct_int * 6 / 100 ))
-  rl_empty=$(( 6 - rl_filled ))
-  rl_bar=""
-  i=0; while [ "$i" -lt "$rl_filled" ]; do rl_bar="${rl_bar}█"; i=$((i + 1)); done
-  i=0; while [ "$i" -lt "$rl_empty" ]; do rl_bar="${rl_bar}░"; i=$((i + 1)); done
-  rl_str="${rl_bar}"
+  rl_str="${dim}(${rl_pct_int}%)${reset}"
   if [ -n "$rl_resets" ]; then
     now_s=$(date +%s)
     if [ "$rl_resets" -gt "$now_s" ] 2>/dev/null; then
       diff=$(( rl_resets - now_s ))
       hrs=$(( diff / 3600 ))
       mins=$(( (diff % 3600) / 60 ))
-      rl_str="${rl_str} ${hrs}h${mins}m"
+      rl_str="${rl_str} ${dim}${hrs}:$(printf '%02d' "$mins")h${reset}"
     fi
   fi
 fi
@@ -192,9 +172,11 @@ fi
 out=""
 out+="${yellow}${short_cwd}${reset}"
 out+="${aqua}${git_branch}${reset}"
-out+=" "
-[ -n "$model" ] && out+="${blue}${model}${reset} "
+[ -n "$model" ] && out+=" ${blue}${model}${reset} "
 out+="${ctx_str}"
-[ -n "$rl_str" ] && out+=" ${purple}⏱ ${rl_str}${reset}"
+[ -n "$rl_str" ] && out+=" ${purple}⏱${reset} ${rl_str}"
+[ -n "$cost_str" ] && out+="  ${orange}${cost_str}${reset}"
+[ -n "$lines_str" ] && out+="  ${green}${lines_str}${reset}"
+[ -n "$dur_str" ] && out+="  ${dim}${dur_str}${reset}"
 
 printf '%b' "$out"
