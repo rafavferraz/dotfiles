@@ -13,6 +13,7 @@ green='\033[38;2;184;187;38m'     # #b8bb26 — context ok
 red='\033[38;2;251;73;52m'        # #fb4934 — context high
 purple='\033[38;2;155;89;182m'    # #9b59b6 — violet
 fg='\033[38;2;235;219;178m'       # #ebdbb2 — default text
+grey='\033[38;2;168;153;132m'     # #a89984 — bar fill (light grey)
 dim='\033[38;2;146;131;116m'      # #928374 — separators
 reset='\033[0m'
 
@@ -102,29 +103,60 @@ if [ -n "$used_pct" ]; then
     remaining="${used_fmt}/${win_short}"
   fi
 
-  ctx_str="${dim}(${pct_int}%) ${remaining}${reset}"
+  # Color the token count by how full the context is: green → yellow → orange → red.
+  if   [ "$pct_int" -ge 85 ]; then ctx_color="$red"
+  elif [ "$pct_int" -ge 70 ]; then ctx_color="$orange"
+  elif [ "$pct_int" -ge 50 ]; then ctx_color="$yellow"
+  else ctx_color="$green"
+  fi
+  ctx_str="${dim}(${pct_int}%)${reset} ${ctx_color}${remaining}${reset}"
 else
   ctx_str="${dim}(--%)${reset}"
 fi
 
-# 5-hour rate limit window
-rl_used=$(jq_num '.rate_limits.five_hour.used_percentage')
-rl_resets=$(jq_num '.rate_limits.five_hour.resets_at')
-
-rl_str=""
-if [ -n "$rl_used" ]; then
-  rl_pct_int=$(echo "$rl_used" | awk '{ printf "%.0f", $1 }')
-  rl_str="${dim}(${rl_pct_int}%)${reset}"
-  if [ -n "$rl_resets" ]; then
-    now_s=$(date +%s)
-    if [ "$rl_resets" -gt "$now_s" ] 2>/dev/null; then
-      diff=$(( rl_resets - now_s ))
-      hrs=$(( diff / 3600 ))
+# Rate limit windows: 5-hour rolling + weekly (7-day)
+# Formats one window ("$1"=used_percentage, "$2"=resets_at, "$3"=label) into a
+# "label [bar] time-to-reset" fragment; empty when the window is absent.
+# The bar is RL_BAR_W cells of ▓ (used) / ░ (free), colored by usage level.
+now_s=$(date +%s)
+RL_BAR_W=8
+rl_window() {
+  local used="$1" resets="$2" label="$3"
+  [ -z "$used" ] && return
+  local pct_int bar frag diff days hrs mins
+  pct_int=$(echo "$used" | awk '{ printf "%.0f", $1 }')
+  # Monochrome bar: filled cells (▓) in light grey, empty (░) in dim grey.
+  bar=$(echo "$pct_int $RL_BAR_W" | awk -v g="$grey" -v d="$dim" '{
+    filled = int($1 * $2 / 100 + 0.5)
+    if (filled > $2) filled = $2
+    printf "%s", g
+    for (i = 0; i < filled; i++) printf "\xe2\x96\x93"      # ▓
+    printf "%s", d
+    for (i = filled; i < $2; i++) printf "\xe2\x96\x91"     # ░
+  }')
+  frag="${dim}${label}${reset} ${bar}${reset}"
+  if [ -n "$resets" ] && [ "$resets" -gt "$now_s" ] 2>/dev/null; then
+    diff=$(( resets - now_s ))
+    days=$(( diff / 86400 ))
+    hrs=$(( (diff % 86400) / 3600 ))
+    if [ "$days" -gt 0 ]; then
+      frag="${frag} ${dim}${days}d ${hrs}h${reset}"
+    else
       mins=$(( (diff % 3600) / 60 ))
-      rl_str="${rl_str} ${dim}${hrs}:$(printf '%02d' "$mins")h${reset}"
+      frag="${frag} ${dim}${hrs}:$(printf '%02d' "$mins")h${reset}"
     fi
   fi
-fi
+  printf '%s' "$frag"
+}
+
+rl5=$(rl_window "$(jq_num '.rate_limits.five_hour.used_percentage')" \
+                "$(jq_num '.rate_limits.five_hour.resets_at')" "5h")
+rl7=$(rl_window "$(jq_num '.rate_limits.seven_day.used_percentage')" \
+                "$(jq_num '.rate_limits.seven_day.resets_at')" "7d")
+
+rl_str=""
+[ -n "$rl5" ] && rl_str="$rl5"
+[ -n "$rl7" ] && rl_str="${rl_str:+$rl_str ${dim}·${reset} }$rl7"
 
 # Session cost (cumulative)
 total_cost=$(jq_num '.cost.total_cost_usd')
