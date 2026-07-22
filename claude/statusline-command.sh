@@ -71,92 +71,91 @@ fi
 # Model name — shorten "Claude Sonnet 4.6 (200k context)" → "Sonnet 4.6"
 model=$(jq_str '.model.display_name' | sed 's/^[Cc]laude //; s/ (.*$//' | xargs)
 
-# Context usage — percentage + remaining tokens
+# Reasoning effort level — only emitted for models that expose it.
+effort=$(jq_str '.effort.level')
+
+# Fill gauge shared by the context and rate-limit segments: "$1"=percent,
+# "$2"=color for the filled cells (▓); empty cells (░) are always dim grey.
+# One cell is 25%, so a fill under 12.5% rounds to an empty gauge.
+BAR_W=4
+bar() {
+  echo "$1 $BAR_W" | awk -v f="$2" -v d="$dim" '{
+    filled = int($1 * $2 / 100 + 0.5)
+    if (filled > $2) filled = $2
+    printf "%s", f
+    for (i = 0; i < filled; i++) printf "\xe2\x96\x93"      # ▓
+    printf "%s", d
+    for (i = filled; i < $2; i++) printf "\xe2\x96\x91"     # ░
+  }'
+}
+
+# Token count → "70k", "432k", "1M", "1.5M".
+fmt_tokens() {
+  echo "$1" | awk '{
+    if ($1 >= 1000000) { v = $1 / 1000000; if (v == int(v)) printf "%dM", v; else printf "%.1fM", v }
+    else if ($1 >= 1000) printf "%dk", $1 / 1000
+    else printf "%d", $1
+  }'
+}
+
+# Context usage — fill gauge + used/window tokens. This gauge carries the
+# green → yellow → orange → red ramp while the rate-limit gauges stay grey, so
+# a colored bar always means the context is the thing filling up.
 used_pct=$(jq_num '.context_window.used_percentage')
 window_size=$(jq_num '.context_window.context_window_size')
 
-ctx_str=""
 if [ -n "$used_pct" ]; then
   pct_int=$(echo "$used_pct" | awk '{ printf "%.0f", $1 }')
-
-  # Used tokens
-  remaining=""
-  if [ -n "$window_size" ] && [ "$window_size" -gt 0 ]; then
-    used_tokens=$(echo "$used_pct $window_size" | awk '{ printf "%.0f", $2 * $1 / 100 }')
-    if [ "$used_tokens" -ge 1000000 ]; then
-      used_fmt=$(echo "$used_tokens" | awk '{ printf "%.1fM", $1/1000000 }')
-    elif [ "$used_tokens" -ge 1000 ]; then
-      used_fmt=$(echo "$used_tokens" | awk '{ printf "%dk", $1/1000 }')
-    else
-      used_fmt="$used_tokens"
-    fi
-    # Format window size
-    if [ "$window_size" -ge 1000000 ]; then
-      win_fmt=$(echo "$window_size" | awk '{ printf "%.1fM", $1/1000000 }')
-    elif [ "$window_size" -ge 1000 ]; then
-      win_fmt=$(echo "$window_size" | awk '{ printf "%dk", $1/1000 }')
-    else
-      win_fmt="$window_size"
-    fi
-    # Strip trailing ".0" from window (1.0M -> 1M)
-    win_short=$(echo "$win_fmt" | sed 's/\.0M$/M/')
-    remaining="${used_fmt}/${win_short}"
-  fi
-
-  # Color the token count by how full the context is: green → yellow → orange → red.
   if   [ "$pct_int" -ge 85 ]; then ctx_color="$red"
   elif [ "$pct_int" -ge 70 ]; then ctx_color="$orange"
   elif [ "$pct_int" -ge 50 ]; then ctx_color="$yellow"
   else ctx_color="$green"
   fi
-  ctx_str="${dim}(${pct_int}%)${reset} ${ctx_color}${remaining}${reset}"
+  ctx_str="$(bar "$pct_int" "$ctx_color")${reset}"
+  if [ -n "$window_size" ] && [ "$window_size" -gt 0 ] 2>/dev/null; then
+    used_tokens=$(echo "$used_pct $window_size" | awk '{ printf "%.0f", $2 * $1 / 100 }')
+    ctx_str="${ctx_str} ${dim}$(fmt_tokens "$used_tokens")/$(fmt_tokens "$window_size")${reset}"
+  fi
 else
-  ctx_str="${dim}(--%)${reset}"
+  ctx_str="$(bar 0 "$dim")${reset}"
 fi
 
-# Rate limit windows: 5-hour rolling + weekly (7-day)
-# Formats one window ("$1"=used_percentage, "$2"=resets_at, "$3"=label) into a
-# "label [bar] time-to-reset" fragment; empty when the window is absent.
-# The bar is RL_BAR_W cells of ▓ (used) / ░ (free), colored by usage level.
+# Rate limit windows: 5-hour rolling + weekly (7-day, all-models limit; the
+# Fable/Opus weekly sub-limit is not exposed to statusline scripts). Formats
+# one window ("$1"=used_percentage, "$2"=resets_at, "$3"=optional label) into
+# a "[gauge] H:MM" fragment; empty when the window is absent. The countdown is
+# total hours, so a fresh week reads "163:44" rather than "6d 19h". These
+# gauges stay grey — color is reserved for the context gauge.
 now_s=$(date +%s)
-RL_BAR_W=8
 rl_window() {
   local used="$1" resets="$2" label="$3"
   [ -z "$used" ] && return
-  local pct_int bar frag diff days hrs mins
+  local pct_int frag diff
   pct_int=$(echo "$used" | awk '{ printf "%.0f", $1 }')
-  # Monochrome bar: filled cells (▓) in light grey, empty (░) in dim grey.
-  bar=$(echo "$pct_int $RL_BAR_W" | awk -v g="$grey" -v d="$dim" '{
-    filled = int($1 * $2 / 100 + 0.5)
-    if (filled > $2) filled = $2
-    printf "%s", g
-    for (i = 0; i < filled; i++) printf "\xe2\x96\x93"      # ▓
-    printf "%s", d
-    for (i = filled; i < $2; i++) printf "\xe2\x96\x91"     # ░
-  }')
-  frag="${dim}${label}${reset} ${bar}${reset}"
+  frag="$(bar "$pct_int" "$grey")${reset}"
+  [ -n "$label" ] && frag="${dim}${label}${reset} ${frag}"
   if [ -n "$resets" ] && [ "$resets" -gt "$now_s" ] 2>/dev/null; then
     diff=$(( resets - now_s ))
-    days=$(( diff / 86400 ))
-    hrs=$(( (diff % 86400) / 3600 ))
-    if [ "$days" -gt 0 ]; then
-      frag="${frag} ${dim}${days}d ${hrs}h${reset}"
-    else
-      mins=$(( (diff % 3600) / 60 ))
-      frag="${frag} ${dim}${hrs}:$(printf '%02d' "$mins")h${reset}"
-    fi
+    frag="${frag} ${dim}$(( diff / 3600 )):$(printf '%02d' $(( (diff % 3600) / 60 )))${reset}"
   fi
   printf '%s' "$frag"
 }
 
-rl5=$(rl_window "$(jq_num '.rate_limits.five_hour.used_percentage')" \
-                "$(jq_num '.rate_limits.five_hour.resets_at')" "5h")
-rl7=$(rl_window "$(jq_num '.rate_limits.seven_day.used_percentage')" \
-                "$(jq_num '.rate_limits.seven_day.resets_at')" "7d")
+# Labels are dropped when both windows render: the order is fixed (5h then 7d)
+# and the countdown magnitudes disambiguate. A window shown alone keeps its
+# label, since position alone would be ambiguous.
+u5=$(jq_num '.rate_limits.five_hour.used_percentage')
+u7=$(jq_num '.rate_limits.seven_day.used_percentage')
+lb5="" lb7=""
+[ -z "$u7" ] && lb5="5h"
+[ -z "$u5" ] && lb7="7d"
+
+rl5=$(rl_window "$u5" "$(jq_num '.rate_limits.five_hour.resets_at')" "$lb5")
+rl7=$(rl_window "$u7" "$(jq_num '.rate_limits.seven_day.resets_at')" "$lb7")
 
 rl_str=""
 [ -n "$rl5" ] && rl_str="$rl5"
-[ -n "$rl7" ] && rl_str="${rl_str:+$rl_str ${dim}·${reset} }$rl7"
+[ -n "$rl7" ] && rl_str="${rl_str:+$rl_str }$rl7"
 
 # Session cost (cumulative)
 total_cost=$(jq_num '.cost.total_cost_usd')
@@ -204,8 +203,9 @@ fi
 out=""
 out+="${yellow}${short_cwd}${reset}"
 out+="${aqua}${git_branch}${reset}"
-[ -n "$model" ] && out+=" ${blue}${model}${reset} "
-out+="${ctx_str}"
+[ -n "$model" ] && out+=" ${blue}${model}${reset}"
+[ -n "$effort" ] && out+=" ${dim}${effort}${reset}"
+out+=" ${ctx_str}"
 [ -n "$rl_str" ] && out+=" ${purple}⏱${reset} ${rl_str}"
 [ -n "$cost_str" ] && out+="  ${orange}${cost_str}${reset}"
 [ -n "$lines_str" ] && out+="  ${green}${lines_str}${reset}"
