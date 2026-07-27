@@ -32,5 +32,8 @@ ln -sf "$DOTFILES/zed/settings.json" ~/.config/zed/settings.json
 ln -sf "$DOTFILES/claude/settings.json" ~/.claude/settings.json
 ln -sf "$DOTFILES/claude/statusline-command.sh" ~/.claude/statusline-command.sh
 
+mkdir -p "$HOME/Library/Application Support/Code/User"
+ln -sf "$DOTFILES/vscode/settings.json" "$HOME/Library/Application Support/Code/User/settings.json"
+
 echo "=== Setting up git credentials ==="
 gh auth setup-git
