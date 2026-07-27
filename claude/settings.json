@@ -3,7 +3,6 @@
     "allow": [],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "bash /Users/rafaelferraz/.claude/statusline-command.sh"
@@ -11,6 +10,7 @@
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": false
   },
-  "effortLevel": "xhigh",
-  "skipDangerousModePermissionPrompt": true
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "model": "claude-fable-5[1m]"
 }
