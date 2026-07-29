@@ -29,7 +29,7 @@
   },
   "project_panel": {
     "dock": "left",
-    "hide_hidden": false,
+    "hide_hidden": true,
     "diagnostic_badges": false,
     "show_diagnostics": "all",
     "hide_gitignore": true,

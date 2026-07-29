@@ -15,7 +15,6 @@
         "editor.stickyScroll.defaultModel": "foldingProviderModel",
         "editor.suggest.insertMode": "replace"
     },
-    "workbench.colorTheme": "Default Dark Modern",
     "workbench.colorCustomizations": {
         "[Default Dark Modern]": {
             "editor.background": "#0A0A0A",
@@ -68,6 +67,9 @@
         }
     },
     "files.autoSave": "afterDelay",
+    "files.exclude": {
+        "**/.*": true
+    },
     "workbench.activityBar.location": "hidden",
     "C_Cpp.default.cppStandard": "gnu++20",
     "makefile.configureOnOpen": true,
